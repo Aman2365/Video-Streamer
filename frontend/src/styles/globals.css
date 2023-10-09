@@ -1,0 +1,29 @@
+.display-flex{
+    display: flex;
+}
+.flex-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-column{
+    display: flex;
+    flex-direction: column;
+}
+
+.justify-space-between-baseline{
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.box-shadow{
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.margin-unset{
+    margin: unset;
+}
+
+.margin-bottom-5px{
+    margin-bottom: 5px;
+}
