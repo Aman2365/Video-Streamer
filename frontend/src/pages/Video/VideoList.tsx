@@ -1,19 +1,16 @@
 import * as React from 'react';
 import Typography from '@mui/material/Typography';
 import { Container } from '@mui/material';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Grid from '@mui/material/Grid';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Navbar/Header'
 import router from 'next/router';
 import toast from 'react-hot-toast';
-import Head from 'next/head';
+import { deleteVideo, fetchVideo } from '../api/video';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Select } from 'antd';
+import { Tags, TagOption } from '@/utils/enum';
 
 interface VideoListProps{
     setLoggedIn: any,
@@ -21,61 +18,61 @@ interface VideoListProps{
 }
 
 export default function VideoList(props: VideoListProps) {
+    const filter: TagOption[]=[
+        {value:Tags.FINANCIALS, label: Tags.FINANCIALS},
+        {value:Tags.HEALTH, label: Tags.HEALTH},
+        {value:Tags.POLITICS, label: Tags.POLITICS},
+        {value:Tags.NATURE, label: Tags.NATURE},
+    ]
     const [videos, setVideos] = useState([])
     const [uploadData, setUploadData] = useState();
     const [editVideo, setEditVideo] = useState<boolean>(false);
     const [editVideoData, setEditVideoData] = useState();
+    const [filterTag, setFilterTag] = useState<Tags | ''>();
     // const navigate = useNavigate();
     async function fetchData() {
-        try {
-            const token = localStorage.getItem('token');
-            const {data} = await axios.get('http://localhost:3003/api/v1/video', {
-                headers: ({
-                    Authorization: 'Bearer ' + token
-                })
-            });
+            const data = await fetchVideo(filterTag || '');
             setVideos(data)
-            toast.success('Ye lo tumhari Videos');
-        } catch {
-            router.push('/')
-            toast.error('please login again');
-        }
     }
     useEffect(() => {
         fetchData();
-    }, [props.setLoggedIn,props.data,uploadData]);
+    }, [props.setLoggedIn,props.data,uploadData,filterTag]);
 
     async function DeleteVideo(id :string){
         try{
-            const token = localStorage.getItem('token');
-            const {data} = await axios.delete(`http://localhost:3003/api/v1/video/${id}`,{
-                headers: ({
-                    Authorization: 'Bearer ' + token
-                })
-            })
-            fetchData()
+            const data = await deleteVideo(id);
+            fetchData();
+            toast.success('Video is deleted');
         }
         catch{
-            toast.error('video delete nhi ho paayi');
+            toast.error('please try again');
         }
     }
     function EditVideoData(data: any){
         setEditVideo(true);
         setEditVideoData(data);
         console.log(data,'edit');
-        
     }
     return (
         <Container>
             <Header
             editVideo={editVideo}
             editVideoData={editVideoData}
-            updateData={data=>setUploadData(data)}
+            updateData={(data)=>setUploadData(data)}
             isLoggedIn={true}/>
-            <Grid container spacing={2} marginTop={2}>
-                    {videos.map((video: any) => {
-                        return <Grid item xs={12} md={4} key={video._id}>
-                            <div>
+            <div className='flex-row align-item' style={{margin: '33px 0 0 0'}}>
+            <p style={{marginRight: '5px'}}>Filter by:-</p>
+            <Select
+            options={filter}
+            style={{width: '100px'}}
+            onChange={(data)=>setFilterTag(data)}
+            value={filterTag}
+            allowClear
+            placeholder = 'Topic' />
+            </div>
+            <div className='flex-row' style={{marginTop: '10px', flexWrap: 'wrap'}}>
+                    {videos && videos?.map((video: any,index) => {
+                        return <div style={{margin: '10px 20px'}}>
                                 <div className='flex-column box-shadow' style={{padding: "10px"}}>
                                     <div className='flex-row justify-space-between-baseline'>
                                         <div onClick={()=>router.push("/Video/Video?videoId="+video._id)} className='flex-column'>
@@ -100,9 +97,8 @@ export default function VideoList(props: VideoListProps) {
                                     />
                                 </div>
                             </div>
-                        </Grid>
                     })}
-            </Grid>
+            </div>
         </Container >
     );
 }

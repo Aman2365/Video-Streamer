@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as mongoose from "mongoose";
 import { User } from "./user.schema";
+import { VideoTag } from "src/utils/enum";
 
 export type VideoDocument = Video & Document;
 
@@ -21,6 +22,10 @@ export class Video {
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: "User" })
     createdBy: User
+
+    @Prop({type: String, enum: VideoTag, default: VideoTag.NATURE})
+    tag: VideoTag
+
 }
 
 export const VideoSchema = SchemaFactory.createForClass(Video)

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, Post, UseInterceptors
 import { Video } from "../model/video.schema"
 import { VideoService } from "../service/video.service";
 import { FileFieldsInterceptor, FilesInterceptor } from "@nestjs/platform-express";
-import { log } from "console";
+import { response } from "express";
 
 @Controller('/api/v1/video')
 export class VideoController {
@@ -18,12 +18,13 @@ export class VideoController {
         if (!files.video[0].filename || !files.cover[0].filename || !video.title) {
             const missingFields = [];
             if (!video.title) missingFields.push('Title');
-            if (!files.cover[0].filename) missingFields.push('Cover Image');
-            if (!files.video[0].filename) missingFields.push('Video');
-    
+            if (!files.cover || !files.cover?.[0]) missingFields.push('Cover Image');
+            if (!files.video || !files.video?.[0]) missingFields.push('Video');
+            if(!video.tag) missingFields.push('Add atleast one tag');
+            
             return response.status(HttpStatus.BAD_REQUEST).json({ message: `The following fields are required: ${missingFields.join(', ')}` });
         }
-        const requestBody = { createdBy: request.user, title: video.title, video: files.video[0].filename, coverImage: files.cover[0].filename }
+        const requestBody = { createdBy: request.user, title: video.title, video: files.video[0].filename, coverImage: files.cover[0].filename, tag: video.tag }
         const newVideo = await this.videoService.createVideo(requestBody);
         return response.status(HttpStatus.CREATED).json({
             newVideo
@@ -31,8 +32,21 @@ export class VideoController {
     }
 
     @Get()
-    async read(@Query() id): Promise<Object> {
-        return await this.videoService.readVideo(id);
+    async read(@Query('tag') tag:string, @Res() response): Promise<Object> {
+        if (tag) {
+            const data = await this.videoService.readVideosByTag(tag);
+            return response.status(HttpStatus.OK).json(data);
+          } else {
+            const data = await this.videoService.readAllVideos()
+            return response.status(HttpStatus.OK).json(data);
+          }
+    }
+
+    @Get()
+    async metadata(@Query('id') id:string, @Res() response): Promise<Object>{
+        // console.log(id,'id');
+        const data = await this.videoService.readVideobyId(id);
+        return response.status(HttpStatus.OK).json(data);
     }
 
     @Get('/:id')
@@ -46,10 +60,10 @@ export class VideoController {
     }
 
     @Delete('/:id')
-    async delete(@Res() response, @Param('id') id) {
-        await this.videoService.delete(id);
-        return response.status(HttpStatus.OK).json({
-            user: `video with ${id} is deleted.`
+    async delete(@Res() response, @Param('id') id, @Req() request) {
+        const data = await this.videoService.delete(id,request);
+        return response.json({  
+            data: data
         })
     }
 }

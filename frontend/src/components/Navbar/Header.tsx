@@ -12,9 +12,8 @@ import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { UploadOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd';
-import {Button, message, Upload } from 'antd';
+import {Button, Radio, Select } from 'antd';
+import { Tags, TagOption } from '@/utils/enum';
 
 const style = {
     position: 'absolute',
@@ -68,19 +67,25 @@ interface HeaderProps{
 }
 
 export default function SearchAppBar(props: HeaderProps) {
+    const filter: TagOption[]=[
+        {value:Tags.FINANCIALS, label: Tags.FINANCIALS},
+        {value:Tags.HEALTH, label: Tags.HEALTH},
+        {value:Tags.POLITICS, label: Tags.POLITICS},
+        {value:Tags.NATURE, label: Tags.NATURE},
+    ]
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [video, setVideo] = useState((props.editVideo)? props.editVideoData.video: "");
     const [cover, setCover] = useState((props.editVideo)? props.editVideoData.coverImage:"");
     const [title, setTitle] = useState(props.editVideoData?.title || "")
+    const [filterTag, setFilterTag] = useState(Tags.NATURE)
     useEffect(()=>{
         if(props.editVideo){
             setOpen(true);
             console.log('handle');
         }
     },[props.editVideo])
-    console.log(props.editVideoData,'title',title);
     
     const submitForm = async (e: any) => {
         e.preventDefault();
@@ -88,6 +93,7 @@ export default function SearchAppBar(props: HeaderProps) {
         formData.append("title", title);
         formData.append("video", video);
         formData.append("cover", cover);
+        formData.append("tag", filterTag);
         const token = localStorage.getItem('token');
         try{
             const data=await axios.post("http://localhost:3003/api/v1/video", formData, {
@@ -166,12 +172,27 @@ export default function SearchAppBar(props: HeaderProps) {
                                                     autoFocus
                                                     margin="normal"
                                                     required
-                                                            fullWidth
-                                                                   name="coverImage"
+                                                    fullWidth
+                                                    name="coverImage"
                                                     type="file"
                                                     id="coverImage"
                                                     onChange={handleCoverChange}
                                                 />
+                                                <div className='flex-row'>
+                                                <label>Tags</label>
+                                                <Radio.Group onChange={(data)=>setFilterTag(data.target.value)} value={filterTag}>
+                                                    <Radio value={Tags.FINANCIALS}>{Tags.FINANCIALS}</Radio>
+                                                    <Radio value={Tags.HEALTH}>{Tags.HEALTH}</Radio>
+                                                    <Radio value={Tags.NATURE}>{Tags.NATURE}</Radio>
+                                                    <Radio value={Tags.POLITICS}>{Tags.POLITICS}</Radio>
+                                                </Radio.Group>
+                                                {/* <Select
+                                                className='select-button'
+                                                options={filter}
+                                                // sx={{ zIndex: 1 }}
+                                                onChange={(data)=>setFilterTag(data)}
+                                                value={filterTag} /> */}
+                                                </div>
                                                 <Button
                                                 onClick={submitForm}
                                                 >

@@ -1,7 +1,9 @@
 import {
+    ForbiddenException,
     Injectable,
     NotFoundException,
     ServiceUnavailableException,
+    UnauthorizedException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -9,22 +11,34 @@ import { Video, VideoDocument } from "../model/video.schema";
 import { createReadStream, statSync } from 'fs';
 import { join } from 'path';
 import { Request, Response } from 'express';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from './user.service';
 
 @Injectable()
 export class VideoService {
 
-    constructor(@InjectModel(Video.name) private videoModel: Model<VideoDocument>) { }
+    constructor(@InjectModel(Video.name) private videoModel: Model<VideoDocument>,private readonly jwt: JwtService, private readonly userService: UserService) { }
 
     async createVideo(video: Object): Promise<Video> {
         const newVideo = new this.videoModel(video);
         return newVideo.save();
     }
-    async readVideo(id): Promise<any> {
-        if (id.id) {
-            return this.videoModel.findOne({ _id: id.id }).populate("createdBy").exec();
+    async readVideobyId(id): Promise<any> {
+        if (id) {
+            // console.log(id);
+            
+            return this.videoModel.findOne({ _id: id }).populate("createdBy").exec();
         }
-        return this.videoModel.find().populate("createdBy").exec();
+        // return this.videoModel.findOne({ _id: id.id }).populate("createdBy").exec();
     }
+
+    async readVideosByTag(tag: string): Promise<Video[]> {
+        return this.videoModel.find({ tag: tag }).populate('createdBy').exec();
+      }
+    
+      async readAllVideos(): Promise<Video[]> {
+        return this.videoModel.find().populate('createdBy').exec();
+      }
 
     async streamVideo(id: string, response: Response, request: Request) {
         try {
@@ -33,7 +47,6 @@ export class VideoService {
             if (!data) {
                 throw new NotFoundException(null, 'VideoNotFound')
             }
-
             const { range } = request.headers;
             if (range) {
                 const { video } = data;
@@ -60,14 +73,28 @@ export class VideoService {
             console.error(e)
             throw new ServiceUnavailableException()
         }
-
     }
 
     async update(id, video: Video): Promise<Video> {
         return await this.videoModel.findByIdAndUpdate(id, video, { new: true })
     }
 
-    async delete(id): Promise<any> {
-        return await this.videoModel.findByIdAndRemove(id);
+    async delete(id,request): Promise<any> {
+        // try{
+            const token = request.headers.authorization.split(' ')[1];
+            const decoded = await this.jwt.verify(token);
+            const userEmail = decoded.email
+            const data = await this.videoModel.findOne({_id: id}).populate('createdBy').exec()
+            const videoOwner = data.createdBy.email;
+            if(userEmail == videoOwner){
+                return await this.videoModel.findByIdAndRemove(id);
+            }  else {
+                // The video doesn't belong to the user
+                throw new ForbiddenException('You do not have permission to delete this video.');
+              }
+        // }  catch (error) {
+        //     // Handle any errors, e.g., token verification error
+        //     throw new UnauthorizedException('Invalid token or unauthorized request.');
+        //   }
     }
 }
