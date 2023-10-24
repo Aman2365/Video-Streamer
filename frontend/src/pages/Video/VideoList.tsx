@@ -41,8 +41,10 @@ export default function VideoList(props: VideoListProps) {
     async function DeleteVideo(id :string){
         try{
             const data = await deleteVideo(id);
-            fetchData();
-            toast.success('Video is deleted');
+            if(!!data){
+                fetchData();
+                toast.success('Video is deleted');
+            }
         }
         catch{
             toast.error('please try again');
@@ -51,7 +53,6 @@ export default function VideoList(props: VideoListProps) {
     function EditVideoData(data: any){
         setEditVideo(true);
         setEditVideoData(data);
-        console.log(data,'edit');
     }
     return (
         <Container>

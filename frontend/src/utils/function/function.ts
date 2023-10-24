@@ -13,6 +13,9 @@ export function handleAPIError(e: any) {
       case 404:
         toast.error(message || 'Not Found!');
         break;
+      case 403:
+        toast.error(message || 'error');
+        break;
       case 400:
         toast.error(message || 'Not Found!');
         break;
