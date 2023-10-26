@@ -14,6 +14,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { signUp } from './api/video';
 
 function Copyright(props: any) {
   return (
@@ -41,7 +42,7 @@ export default function SignUp({}) {
       password: data.get('password')
     };
     try{
-     const res = await axios.post("http://localhost:3003/api/v1/user/signup", form);
+     const res = await signUp(form);
      if(res.status == 201){
       toast.success('account ban gya tumhara');
      }

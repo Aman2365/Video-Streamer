@@ -7,14 +7,14 @@ import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 // import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
 export default function VideoList() {
     const router = useRouter();
     const videoId = router.query?.videoId;
     const [videoInfo, setVideoInfo] = useState<any>([]);
-    React.useEffect(() => {
+    useEffect(() => {
         async function fetchData() {
             try {
                 const token = localStorage.getItem('token');

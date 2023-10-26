@@ -13,6 +13,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom"
 import router, { Router } from 'next/router';
 import toast, { Toaster } from 'react-hot-toast';
+import { signIn } from '@/pages/api/video';
 
 const theme = createTheme();
 
@@ -32,7 +33,7 @@ export default function SignIn(props: SignInProps) {
       email: formData.get('email'),
       password: formData.get('password')
     };
-    const { data } = await axios.post("http://localhost:3003/api/v1/user/signin", form);
+    const { data } = await signIn(form)
     if (data.status === parseInt('401')) {
       setErrorMessage(data.response)
       toast.error('Phirse login karo');

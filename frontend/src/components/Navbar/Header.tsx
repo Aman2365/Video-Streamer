@@ -74,9 +74,6 @@ export default function SearchAppBar(props: HeaderProps) {
         {value:Tags.POLITICS, label: Tags.POLITICS},
         {value:Tags.NATURE, label: Tags.NATURE},
     ]
-    // const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
     const [video, setVideo] = useState((props.editVideo)? props.editVideoData.video: "");
     const [cover, setCover] = useState((props.editVideo)? props.editVideoData.coverImage:"");
     const [title, setTitle] = useState(props.editVideoData?.title || "")
