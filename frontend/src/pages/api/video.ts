@@ -29,3 +29,17 @@ export async function deleteVideo(id: string) {
         handleAPIError(e.response.data);
     }
 }
+
+export async function uploadVideo(formData: FormData){
+    const token = localStorage.getItem('token');
+    try{
+        const data=await axios.post("http://localhost:3003/api/v1/video", formData, {
+            headers: ({
+                Authorization: 'Bearer ' + token
+            })
+        });
+        return data;
+    } catch(e: any){
+        handleAPIError(e.response.data);
+    }
+}

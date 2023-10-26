@@ -7,13 +7,14 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import { Avatar } from '@mui/material';
 // import Button from '@mui/material/Button';
-import Modal from '@mui/material/Modal';
+// import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import {Button, Radio, Select } from 'antd';
+import {Button, Radio, Modal } from 'antd';
 import { Tags, TagOption } from '@/utils/enum';
+import { uploadVideo } from '@/pages/api/video';
 
 const style = {
     position: 'absolute',
@@ -73,41 +74,22 @@ export default function SearchAppBar(props: HeaderProps) {
         {value:Tags.POLITICS, label: Tags.POLITICS},
         {value:Tags.NATURE, label: Tags.NATURE},
     ]
-    const [open, setOpen] = useState(false);
+    // const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [video, setVideo] = useState((props.editVideo)? props.editVideoData.video: "");
     const [cover, setCover] = useState((props.editVideo)? props.editVideoData.coverImage:"");
     const [title, setTitle] = useState(props.editVideoData?.title || "")
     const [filterTag, setFilterTag] = useState(Tags.NATURE)
+    const [open, setOpen] = useState(false);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const [modalText, setModalText] = useState('Content of the modal');
+    
     useEffect(()=>{
         if(props.editVideo){
             setOpen(true);
-            console.log('handle');
         }
     },[props.editVideo])
-    
-    const submitForm = async (e: any) => {
-        e.preventDefault();
-        const formData = new FormData();
-        formData.append("title", title);
-        formData.append("video", video);
-        formData.append("cover", cover);
-        formData.append("tag", filterTag);
-        const token = localStorage.getItem('token');
-        try{
-            const data=await axios.post("http://localhost:3003/api/v1/video", formData, {
-                headers: ({
-                    Authorization: 'Bearer ' + token
-                })
-            })
-            setOpen(false);
-            props.updateData(data);
-        }
-        catch{
-            toast.error('Phirse upload karo');
-        }
-    }
     const handleFileChange = (e: any) => {
         const selectedFile = e.target.files[0];
         setVideo(selectedFile);
@@ -116,6 +98,46 @@ export default function SearchAppBar(props: HeaderProps) {
       const handleCoverChange = (e: any) => {
         const selectedFile = e.target.files[0];
         setCover(selectedFile);
+      };
+
+      const showModal = () => {
+        setOpen(true);
+      };
+    
+      const handleOk = async () => {
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("video", video);
+        formData.append("cover", cover);
+        formData.append("tag", filterTag);
+        const token = localStorage.getItem('token');
+        try{
+            const data=await uploadVideo(formData);
+            setModalText('Uploading Video');
+            setConfirmLoading(true);
+            if(data?.status == 201){
+                props.updateData(data);
+                setTimeout(() => {
+                    setOpen(false);
+                    setConfirmLoading(false);
+                  }, 1000);
+            }
+            else{
+                setTimeout(() => {
+                    toast.error('Please Upload video again')
+                    setConfirmLoading(false);
+                  }, 1000);
+            }
+            // setOpen(false);
+        } catch{
+
+        }
+
+      };
+    
+      const handleCancel = () => {
+        console.log('Clicked cancel button');
+        setOpen(false);
       };
 
     return (
@@ -141,14 +163,15 @@ export default function SearchAppBar(props: HeaderProps) {
                             <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
                             </Avatar>
                             <div>
-                                <Button onClick={handleOpen}>Add New</Button>
+                                <Button type="primary" onClick={showModal}>Add New</Button>
                                 <Modal
+                                    title="Title"
                                     open={open}
-                                    onClose={handleClose}
-                                    aria-labelledby="modal-modal-title"
-                                    aria-describedby="modal-modal-description"
+                                    onOk={handleOk}
+                                    confirmLoading={confirmLoading}
+                                    onCancel={handleCancel}
                                 >
-                                    <Box sx={style}>
+                                    <div>
                                         <Typography id="modal-modal-title" variant="h6" component="h2">
                                             <Box component="form" noValidate sx={{ mt: 1 }}>
                                                 <label>Video Title:</label>
@@ -163,9 +186,6 @@ export default function SearchAppBar(props: HeaderProps) {
                                                     onChange={(e) => setTitle(e.target.value)}
                                                 />
                                                 <label>Select Video:</label>
-                                                {/* <Upload {...prop}>
-                                                    <Button icon={<UploadOutlined />}>Click to Upload</Button>
-                                                </Upload> */}
                                                 <input type='file' accept='video/*' onChange={handleFileChange}/>
                                                 <label>Select Cover Image:</label>
                                                 <TextField
@@ -186,21 +206,10 @@ export default function SearchAppBar(props: HeaderProps) {
                                                     <Radio value={Tags.NATURE}>{Tags.NATURE}</Radio>
                                                     <Radio value={Tags.POLITICS}>{Tags.POLITICS}</Radio>
                                                 </Radio.Group>
-                                                {/* <Select
-                                                className='select-button'
-                                                options={filter}
-                                                // sx={{ zIndex: 1 }}
-                                                onChange={(data)=>setFilterTag(data)}
-                                                value={filterTag} /> */}
                                                 </div>
-                                                <Button
-                                                onClick={submitForm}
-                                                >
-                                                    Upload
-                                                </Button>
                                             </Box>
                                         </Typography>
-                                    </Box>
+                                    </div>
                                 </Modal>
                             </div>
 

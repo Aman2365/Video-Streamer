@@ -23,5 +23,8 @@ export function handleAPIError(e: any) {
         // router.push('/');
         window.location.replace("/");
         break;
+      default:
+        toast.error(message || 'failed');
+        break;
     }
   }
