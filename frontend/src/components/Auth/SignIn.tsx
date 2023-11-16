@@ -33,15 +33,14 @@ export default function SignIn(props: SignInProps) {
       email: formData.get('email'),
       password: formData.get('password')
     };
-    const { data } = await signIn(form)
-    if (data.status === parseInt('401')) {
+    const data = await signIn(form)
+    if (data?.status === parseInt('401')) {
       setErrorMessage(data.response)
       toast.error('Phirse login karo');
     } else {
       localStorage.setItem('token', data.token);
       props.isLoggedIn(true);
       router.push('/Video/VideoList')
-      // navigate('/video')
     }
   };
   return (

@@ -32,6 +32,7 @@ export class VideoController {
     }
 
     @Get()
+
     async read(@Query('tag') tag:string, @Res() response): Promise<Object> {
         if (tag) {
             const data = await this.videoService.readVideosByTag(tag);

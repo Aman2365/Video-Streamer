@@ -4,8 +4,6 @@ import { Model } from "mongoose";
 import { User, UserDocument } from "../model/user.schema";
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { log } from "console";
-import { async } from "rxjs";
 
 @Injectable()
 export class UserService {
@@ -15,7 +13,7 @@ export class UserService {
     ) { }
 
     async signup(user: User): Promise<User> {
-        const salt = await bcrypt.genSalt();
+        const salt = await bcrypt.genSalt();    
         const hash = await bcrypt.hash(user.password, salt);
         const reqBody = {
             fullname: user.fullname,
@@ -39,7 +37,7 @@ export class UserService {
             }
             return new HttpException('Incorrect username or password', HttpStatus.UNAUTHORIZED)
         }
-        return new HttpException('Incorrect username or password', HttpStatus.UNAUTHORIZED)
+        return new HttpException('User not found', HttpStatus.UNAUTHORIZED)
     }
 
     async getOne(email): Promise<User> {

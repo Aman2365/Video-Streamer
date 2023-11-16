@@ -22,6 +22,7 @@ export function handleAPIError(e: any) {
       case 401:
         // router.push('/');
         window.location.replace("/");
+        toast.error('login again')
         break;
       default:
         toast.error(message || 'failed');
