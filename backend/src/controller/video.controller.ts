@@ -32,12 +32,12 @@ export class VideoController {
     }
 
     @Get()
-    async read(@Query('tag') tag:string,@Query('user') user:string , @Res() response): Promise<Object> {
+
+    async read(@Query('tag') tag:string, @Res() response): Promise<Object> {
         if (tag) {
             const data = await this.videoService.readVideosByTag(tag);
             return response.status(HttpStatus.OK).json(data);
-          }
-        else {
+          } else {
             const data = await this.videoService.readAllVideos()
             return response.status(HttpStatus.OK).json(data);
           }

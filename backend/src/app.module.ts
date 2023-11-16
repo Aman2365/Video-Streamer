@@ -19,7 +19,7 @@ import { isAuthenticated } from './app.middleware';
 
 @Module({
   imports: [
-     MongooseModule.forRoot('mongodb://root:password@localhost:27017'),
+     MongooseModule.forRoot('mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.0.2'),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Video.name, schema: VideoSchema }]),
 

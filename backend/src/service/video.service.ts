@@ -36,7 +36,7 @@ export class VideoService {
         return this.videoModel.find({ tag: tag }).populate('createdBy').exec();
       }
     
-    async readAllVideos(): Promise<Video[]> {
+      async readAllVideos(): Promise<Video[]> {
         return this.videoModel.find().populate('createdBy').exec();
       }
 
